@@ -44,14 +44,11 @@
       margin: 10px;
     }
   </style>
-
   <script>
-    // ✅ Supabase 설정
     const SUPABASE_URL = 'https://nsfmxmtphiphxevfueua.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zZm14bXRwaGlwaHhldmZ1ZXVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MzcyNDgsImV4cCI6MjA2NjUxMzI0OH0.N5w7lrlujJq0Jb_CliL0DRqitv3U0TZwyK7s2IcF1NE'; // 본인의 anon 키로 교체
+    const SUPABASE_KEY = 'YOUR_SUPABASE_KEY';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ✅ 단어 데이터를 Supabase에서 불러오기
     async function getWordPairsFromSupabase() {
       const { data, error } = await supabase.from('wordlist').select('*');
       if (error) {
@@ -69,7 +66,6 @@
       return pairs;
     }
 
-    // ✅ 결과를 Supabase에 저장
     async function saveToSupabase(studentId, studentName, roundNum, final, finals, semis, quarters) {
       const { data, error } = await supabase.from('responses').insert([{
         student_id: studentId,
@@ -87,14 +83,18 @@
       }
     }
 
-    // ✅ 이상형 월드컵 진행 관련 변수
     let wordPairs = [], roundData = [], newRound = [], currentPairIndex = 0;
     let currentRound = 64, currentRoundNum = 1;
     let finalStages = { 8: [], 4: [], 2: [], 1: null };
     let selectedByRound = { 8: [], 4: [], 2: [], 1: [] };
 
-    // ✅ 라운드 시작
     async function startTournament() {
+      const studentId = document.getElementById("studentId").value.trim();
+      const studentName = document.getElementById("studentName").value.trim();
+      if (!studentId || !studentName) {
+        alert("학번과 이름을 모두 입력해주세요.");
+        return;
+      }
       wordPairs = await getWordPairsFromSupabase();
       if (wordPairs.length === 0) return;
       roundData = [...wordPairs];
@@ -103,7 +103,6 @@
       showNextPair();
     }
 
-    // ✅ 다음 카드 표시
     function showNextPair() {
       const container = document.getElementById("tournament");
       container.innerHTML = "";
@@ -149,35 +148,30 @@
         card.innerHTML = `<div class="word">${item[0]}</div><div class="desc">${item[1]}</div>`;
         div.appendChild(card);
       });
-
       container.appendChild(div);
     }
 
-    // ✅ 결과 요약
     function showSummary() {
       const final = selectedByRound[1][0];
       const finals = finalStages[2].filter(w => !selectedByRound[2].includes(w));
       const semis = finalStages[4].filter(w => !selectedByRound[4].includes(w));
       const quarters = finalStages[8].filter(w => !selectedByRound[8].includes(w));
-
       const studentId = document.getElementById("studentId").value.trim();
       const studentName = document.getElementById("studentName").value.trim();
-
       saveToSupabase(studentId, studentName, currentRoundNum, final, finals, semis, quarters);
-
       const resultArea = document.getElementById("result");
       resultArea.innerHTML = `
         <h3>▶ ${studentId} ${studentName} 님의 응답결과입니다.</h3>
         <p><strong>최종 선택:</strong> ${final}</p>
-        <p><strong>결승 진출:</strong> ${finals.join(" / ")}</p>
-        <p><strong>4강 진출:</strong> ${semis.join(" / ")}</p>
-        <p><strong>8강 진출:</strong> ${quarters.join(" / ")}</p>
+        <p><strong>결승 진입:</strong> ${finals.join(" / ")}</p>
+        <p><strong>4강 진입:</strong> ${semis.join(" / ")}</p>
+        <p><strong>8강 진입:</strong> ${quarters.join(" / ")}</p>
       `;
     }
   </script>
 </head>
 <body>
-  <h1>능력 동사 이상형 월드컵</h1>
+  <h1>능력 동사 이상형 월드콧</h1>
   <p>
     학번: <input type="text" id="studentId"> <br>
     이름: <input type="text" id="studentName"> <br><br>
